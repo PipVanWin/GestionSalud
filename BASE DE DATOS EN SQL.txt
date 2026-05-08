@@ -1,0 +1,51 @@
+USE GestionSaludDB;
+GO
+
+-- 1. TABLA DE TIPOS DE ESPACIOS (Consultorios, Salas, etc.)
+CREATE TABLE Espacio_Tipo (
+    IdTipoEspacio INT PRIMARY KEY,
+    NombreTipo VARCHAR(50) NOT NULL -- Ej: 'Consultorio Médico', 'Laboratorio'
+);
+
+-- 2. TABLA DE ESPACIOS FÍSICOS (La ubicación exacta dentro del centro)
+CREATE TABLE Espacio_Medico (
+    IdEspacio INT PRIMARY KEY,
+    NombreEspacio VARCHAR(50) NOT NULL, -- Ej: 'Consultorio 1', 'Sala A'
+    CapacidadEspera INT,
+    IdCentro INT,
+    IdTipoEspacio INT,
+    CONSTRAINT FK_Espacio_Centro FOREIGN KEY (IdCentro) REFERENCES Infraestructura_Centro(IdCentro),
+    CONSTRAINT FK_Espacio_Tipo FOREIGN KEY (IdTipoEspacio) REFERENCES Espacio_Tipo(IdTipoEspacio)
+);
+
+-- 3. TABLA DE INVENTARIO INDIVIDUAL (Lo más importante del proyecto)
+-- Aquí es donde guardas el código de inventario y el número de serie
+CREATE TABLE Inventario_Equipo (
+    IdInventario INT PRIMARY KEY,
+    CodigoMunicipal VARCHAR(50) UNIQUE NOT NULL, -- El código que pide el enunciado
+    NumeroSerie VARCHAR(50) NOT NULL,
+    Marca VARCHAR(50),
+    Modelo VARCHAR(50),
+    DescripcionTecnica VARCHAR(MAX), -- Ej: 'Monitor de Signos Vitales Philips'
+    EstadoActual VARCHAR(20), -- 'Activo', 'En Calibración', 'Dañado'
+    IdEspacio INT, -- Dónde está instalado actualmente
+    CONSTRAINT FK_Equipo_Espacio FOREIGN KEY (IdEspacio) REFERENCES Espacio_Medico(IdEspacio)
+);
+
+-- 4. TABLA DE INCIDENCIAS Y MANTENIMIENTOS
+CREATE TABLE Gestion_Incidencia (
+    IdIncidencia INT PRIMARY KEY IDENTITY(1,1),
+    FechaRegistro DATETIME DEFAULT GETDATE(),
+    DescripcionProblema VARCHAR(MAX) NOT NULL, -- Ej: 'Falla en toma de oxígeno'
+    TipoAccion VARCHAR(50), -- 'Mantenimiento', 'Reparación', 'Calibración'
+    IdInventario INT,
+    IdEmpleadoReporta INT, -- Quién registró la falla
+    CONSTRAINT FK_Incidencia_Equipo FOREIGN KEY (IdInventario) REFERENCES Inventario_Equipo(IdInventario),
+    CONSTRAINT FK_Incidencia_Empleado FOREIGN KEY (IdEmpleadoReporta) REFERENCES Personal_Empleado(IdEmpleado)
+);
+
+-- DATOS DE PRUEBA NECESARIOS
+INSERT INTO Espacio_Tipo VALUES (1, 'Consultorio Médico'), (2, 'Laboratorio Clínico');
+INSERT INTO Espacio_Medico (IdEspacio, NombreEspacio, IdCentro, IdTipoEspacio) VALUES (1, 'Consultorio 1', 1, 1);
+INSERT INTO Inventario_Equipo (IdInventario, CodigoMunicipal, NumeroSerie, Marca, Modelo, IdEspacio) 
+VALUES (1, 'MUN-001', 'SN789123', 'Philips', 'IntelliVue MX450', 1);
