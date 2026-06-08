@@ -4,10 +4,10 @@ using GestionSalud.Datos;
 
 namespace GestionSalud.Servicios
 {
-    /// Genera los 5 reportes requeridos por el Director Municipal de Salud.
+    // Genera los 5 reportes requeridos por el Director Municipal de Salud.
     public class ReporteService
     {
-        /// Reporte 1 — Número de espacios por centro agrupados por tipo.
+        // Reporte 1 — Número de espacios por centro agrupados por tipo.
         public DataTable EspaciosPorCentro()
         {
             return Conexion.EjecutarConsulta(@"
@@ -21,7 +21,7 @@ namespace GestionSalud.Servicios
                 ORDER  BY ic.NombreCentro, et.NombreTipo");
         }
 
-        /// Reporte 2 — Incidencias y mantenimientos entre dos fechas.
+        // Reporte 2 — Incidencias y mantenimientos entre dos fechas.
         public DataTable IncidenciasPorFechas(DateTime desde, DateTime hasta)
         {
             return Conexion.EjecutarConsulta(@"
@@ -47,7 +47,7 @@ namespace GestionSalud.Servicios
                 });
         }
 
-        /// Reporte 3 — Top 3 consultorios mejor equipados por centro
+        // Reporte 3 — Top 3 consultorios mejor equipados por centro
         public DataTable Top3ConsultoriosMejorEquipados()
         {
             return Conexion.EjecutarConsulta(@"
@@ -74,7 +74,7 @@ namespace GestionSalud.Servicios
                 ORDER  BY NombreCentro, Posicion");
         }
 
-        /// Reporte 4 — Detalle de todos los equipos de un espacio por su ID.
+        // Reporte 4 — Detalle de todos los equipos de un espacio por su ID.
         public DataTable EquiposPorEspacio(int idEspacio)
         {
             return Conexion.EjecutarConsulta(@"
@@ -87,13 +87,11 @@ namespace GestionSalud.Servicios
                 cmd => cmd.Parameters.AddWithValue("@id", idEspacio));
         }
 
-        /// Reporte 5 — Buscar equipo por código municipal o número de serie.
-        /// FIX: se agrega ie.IdInventario al SELECT para que FormIncidencia
-        ///      pueda leer el ID al seleccionar un equipo en la grilla 
+        // Reporte 5 — Buscar equipo por código municipal o número de serie.
         public DataTable BuscarEquipo(string codigoOSerie)
         {
             return Conexion.EjecutarConsulta(@"
-                SELECT ie.IdInventario,                                   -- FIX: columna añadida
+                SELECT ie.IdInventario,
                        ie.CodigoMunicipal, ie.NumeroSerie,
                        ie.Marca, ie.Modelo, ie.EstadoActual,
                        ISNULL(em.NombreEspacio, 'Sin asignar') AS Espacio,
@@ -104,6 +102,17 @@ namespace GestionSalud.Servicios
                 WHERE  ie.CodigoMunicipal = @val
                    OR  ie.NumeroSerie     = @val",
                 cmd => cmd.Parameters.AddWithValue("@val", codigoOSerie.Trim()));
+        }
+
+        // Obtiene la lista completa de espacios médicos con el formato "Centro - Espacio".
+        public DataTable ObtenerEspaciosCombo()
+        {
+            return Conexion.EjecutarConsulta(@"
+                SELECT em.IdEspacio AS Id, 
+                       ic.NombreCentro + ' - ' + em.NombreEspacio AS Nombre
+                FROM   Espacio_Medico em
+                JOIN   Infraestructura_Centro ic ON em.IdCentro = ic.IdCentro
+                ORDER  BY ic.NombreCentro, em.NombreEspacio");
         }
     }
 }

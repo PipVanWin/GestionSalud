@@ -40,17 +40,25 @@ namespace GestionSalud.Presentacion
         // Al cambiar centro, cargar sus espacios
         private void cboCentro_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (cboCentro.SelectedValue == null) return;
+            // Validar que haya una selección real
+            if (cboCentro.SelectedIndex < 0 || cboCentro.SelectedValue == null)
+            {
+                cboEspacio.DataSource = null;
+                return;
+            }
+
+            // Evitar el DataRowView: leer directamente desde la fila seleccionada
+            if (!(cboCentro.SelectedItem is DataRowView rowView))
+                return;
 
             try
             {
-                if (cboCentro.SelectedValue == null || cboCentro.SelectedValue == DBNull.Value) return;
-                int idCentro = Convert.ToInt32(cboCentro.SelectedValue);
+                int idCentro = Convert.ToInt32(rowView["IdCentro"]);
                 var dt = _inventario.ListarEspaciosPorCentro(idCentro);
 
-                cboEspacio.DataSource    = dt;
+                cboEspacio.DataSource = dt;
                 cboEspacio.DisplayMember = "NombreEspacio";
-                cboEspacio.ValueMember   = "IdEspacio";
+                cboEspacio.ValueMember = "IdEspacio";
                 cboEspacio.SelectedIndex = -1;
             }
             catch (Exception ex) { MostrarError(ex.Message); }

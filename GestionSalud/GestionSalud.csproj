@@ -203,9 +203,7 @@
     <Compile Include="Presentacion\FormHojaInventario.Designer.cs">
       <DependentUpon>FormHojaInventario.cs</DependentUpon>
     </Compile>
-    <Compile Include="Presentacion\FormReportes.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Presentacion\FormReportes.cs" />
     <Compile Include="Presentacion\FormReportes.Designer.cs">
       <DependentUpon>FormReportes.cs</DependentUpon>
     </Compile>

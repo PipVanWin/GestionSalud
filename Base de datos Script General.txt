@@ -1,0 +1,175 @@
+/* 
+"GestionSaludDB"
+*/
+
+IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'GestionSaludDB')
+BEGIN
+    CREATE DATABASE GestionSaludDB;
+END
+GO
+
+USE GestionSaludDB;
+GO
+
+-- 2. CREACIÓN DE TABLAS (Orden Jerárquico estricto)
+
+-- Tabla de Roles
+CREATE TABLE Sistema_Rol (
+    IdRol INT PRIMARY KEY,
+    NombreRol VARCHAR(50) NOT NULL,
+    Descripcion VARCHAR(100),
+    Permisos VARCHAR(50)
+);
+
+-- Tabla de Países
+CREATE TABLE Ubicacion_Pais (
+    IdPais INT PRIMARY KEY,
+    CodigoPostal VARCHAR(10),
+    NombrePais VARCHAR(50) NOT NULL,
+    Moneda VARCHAR(20)
+);
+
+-- Tabla de Estados/Departamentos
+CREATE TABLE Ubicacion_Estado (
+    IdEstado INT PRIMARY KEY,
+    NombreEstado VARCHAR(50) NOT NULL,
+    IdPais INT,
+    CONSTRAINT FK_Estado_Pais FOREIGN KEY (IdPais) REFERENCES Ubicacion_Pais(IdPais)
+);
+
+-- Tabla de Ciudades
+CREATE TABLE Ubicacion_Ciudad (
+    IdCiudad INT PRIMARY KEY,
+    NombreCiudad VARCHAR(50) NOT NULL,
+    Zona VARCHAR(10),
+    Avenida VARCHAR(20),
+    Calle VARCHAR(20),
+    IdEstado INT,
+    CONSTRAINT FK_Ciudad_Estado FOREIGN KEY (IdEstado) REFERENCES Ubicacion_Estado(IdEstado)
+);
+
+-- Tabla de Centros Médicos
+CREATE TABLE Infraestructura_Centro (
+    IdCentro INT PRIMARY KEY,
+    NombreCentro VARCHAR(100) NOT NULL,
+    CapacidadPacientes INT,
+    IdCiudad INT,
+    CONSTRAINT FK_Centro_Ciudad FOREIGN KEY (IdCiudad) REFERENCES Ubicacion_Ciudad(IdCiudad)
+);
+
+-- Tabla de Empleados
+CREATE TABLE Personal_Empleado (
+    IdEmpleado INT PRIMARY KEY,
+    Nombre VARCHAR(50) NOT NULL,
+    Apellido VARCHAR(50) NOT NULL,
+    Contrasena VARCHAR(255) NOT NULL,
+    CorreoElectronico VARCHAR(100) UNIQUE,
+    Salario DECIMAL(10, 2),
+    Genero CHAR(1),
+    IdCentro INT,
+    IdRol INT,
+    CONSTRAINT FK_Empleado_Centro FOREIGN KEY (IdCentro) REFERENCES Infraestructura_Centro(IdCentro),
+    CONSTRAINT FK_Empleado_Rol FOREIGN KEY (IdRol) REFERENCES Sistema_Rol(IdRol)
+);
+
+-- Tabla de Tipos de Espacios
+CREATE TABLE Espacio_Tipo (
+    IdTipoEspacio INT PRIMARY KEY,
+    NombreTipo VARCHAR(50) NOT NULL
+);
+
+-- Tabla de Espacios Físicos (Depende de Infraestructura_Centro y Espacio_Tipo)
+CREATE TABLE Espacio_Medico (
+    IdEspacio INT PRIMARY KEY,
+    NombreEspacio VARCHAR(50) NOT NULL,
+    CapacidadEspera INT,
+    IdCentro INT,
+    IdTipoEspacio INT,
+    CONSTRAINT FK_Espacio_Centro FOREIGN KEY (IdCentro) REFERENCES Infraestructura_Centro(IdCentro),
+    CONSTRAINT FK_Espacio_Tipo FOREIGN KEY (IdTipoEspacio) REFERENCES Espacio_Tipo(IdTipoEspacio)
+);
+
+-- Tabla de Inventario Individual
+CREATE TABLE Inventario_Equipo (
+    IdInventario INT PRIMARY KEY,
+    CodigoMunicipal VARCHAR(50) UNIQUE NOT NULL,
+    NumeroSerie VARCHAR(50) NOT NULL,
+    Marca VARCHAR(50),
+    Modelo VARCHAR(50),
+    DescripcionTecnica VARCHAR(MAX),
+    EstadoActual VARCHAR(20),
+    IdEspacio INT,
+    CONSTRAINT FK_Equipo_Espacio FOREIGN KEY (IdEspacio) REFERENCES Espacio_Medico(IdEspacio)
+);
+
+-- Tabla de Incidencias y Mantenimientos
+CREATE TABLE Gestion_Incidencia (
+    IdIncidencia INT PRIMARY KEY IDENTITY(1,1),
+    FechaRegistro DATETIME DEFAULT GETDATE(),
+    DescripcionProblema VARCHAR(MAX) NOT NULL,
+    TipoAccion VARCHAR(50),
+    IdInventario INT,
+    IdEmpleadoReporta INT,
+    CONSTRAINT FK_Incidencia_Equipo FOREIGN KEY (IdInventario) REFERENCES Inventario_Equipo(IdInventario),
+    CONSTRAINT FK_Incidencia_Empleado FOREIGN KEY (IdEmpleadoReporta) REFERENCES Personal_Empleado(IdEmpleado)
+);
+GO
+
+-- 3. INSERCIÓN DE DATOS INICIALES Y CONFIGURACIONES OFICIALES
+
+-- Insertar Rol Inicial
+INSERT INTO Sistema_Rol (IdRol, NombreRol, Descripcion, Permisos)
+VALUES (1, 'Director Municipal', 'Acceso total al sistema', 'Admin');
+
+-- Insertar Estructura Geográfica
+INSERT INTO Ubicacion_Pais (IdPais, CodigoPostal, NombrePais, Moneda) 
+VALUES (1, '01001', 'Guatemala', 'Quetzal');
+
+INSERT INTO Ubicacion_Estado (IdEstado, NombreEstado, IdPais) 
+VALUES (1, 'Guatemala', 1);
+
+INSERT INTO Ubicacion_Ciudad (IdCiudad, NombreCiudad, Zona, Avenida, Calle, IdEstado) 
+VALUES (1, 'Ciudad de Guatemala', '1', '1', '1', 1);
+
+-- Insertar Centro Médico
+INSERT INTO Infraestructura_Centro (IdCentro, NombreCentro, CapacidadPacientes, IdCiudad) 
+VALUES (1, 'Clínica Central de Salud', 100, 1);
+
+-- Insertar Usuario Administrador de Prueba
+INSERT INTO Personal_Empleado (IdEmpleado, Nombre, Apellido, Contrasena, CorreoElectronico, Salario, Genero, IdCentro, IdRol)
+VALUES (1, 'Marcos', 'Garcia', '12345', 'marcos@salud.com', 5000.00, 'M', 1, 1);
+
+-- Insertar los 5 Tipos de Espacios Oficiales
+INSERT INTO Espacio_Tipo (IdTipoEspacio, NombreTipo) VALUES 
+(1, 'Consultorios'),
+(2, 'Salas de Emergencia'),
+(3, 'Laboratorios'),
+(4, 'Oficinas Administrativas'),
+(5, 'Almacenes Generales');
+
+-- Insertar Espacios Médicos (Solo los autorizados, omitiendo los excedentes 8, 9, 10 y 11)
+INSERT INTO Espacio_Medico (IdEspacio, NombreEspacio, IdCentro, IdTipoEspacio) 
+VALUES (1, 'Consultorio 1', 1, 1);
+
+-- Insertar Equipo de Inventario de Prueba
+INSERT INTO Inventario_Equipo (IdInventario, CodigoMunicipal, NumeroSerie, Marca, Modelo, IdEspacio) 
+VALUES (1, 'MUN-001', 'SN789123', 'Philips', 'IntelliVue MX450', 1);
+GO
+
+-- 4. VERIFICACIÓN FINAL DEL ESTADO DEL SISTEMA
+PRINT '=======================================================';
+PRINT '   BASE DE DATOS CONFIGURADA E INICIADA CON ÉXITO';
+PRINT '=======================================================';
+
+PRINT '--- TIPOS DE ESPACIOS CONFIGURADOS ---';
+SELECT * FROM Espacio_Tipo;
+
+PRINT '--- CONSULTORIOS RESTANTES EN EL SISTEMA ---';
+SELECT IdEspacio, NombreEspacio 
+FROM Espacio_Medico 
+WHERE IdTipoEspacio = 1;
+
+PRINT '--- USUARIOS E INVENTARIO INICIAL ---';
+SELECT * FROM Personal_Empleado;
+SELECT * FROM Inventario_Equipo;
+GO

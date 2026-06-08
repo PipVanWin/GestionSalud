@@ -1,9 +1,23 @@
 using System;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using GestionSalud.Servicios;
 
 namespace GestionSalud.Presentacion
 {
+    public static class TextBoxHelper
+    {
+        private const int EM_SETCUEBANNER = 0x1501;
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        private static extern Int32 SendMessage(IntPtr hWnd, int msg, int wParam, [MarshalAs(UnmanagedType.LPWStr)] string lParam);
+
+        public static void SetPlaceholder(TextBox textBox, string placeholderText)
+        {
+            SendMessage(textBox.Handle, EM_SETCUEBANNER, 0, placeholderText);
+        }
+    }
+
     public partial class FormReportes : Form
     {
         public enum TipoReporte
@@ -16,7 +30,7 @@ namespace GestionSalud.Presentacion
         }
 
         private readonly ReporteService _reportes = new ReporteService();
-        private readonly TipoReporte    _tipo;
+        private readonly TipoReporte _tipo;
 
         public FormReportes(TipoReporte tipo)
         {
@@ -29,13 +43,15 @@ namespace GestionSalud.Presentacion
             ConfigurarVista();
         }
 
-        // Configurar título y filtros visibles según tipo
         private void ConfigurarVista()
         {
-            // Ocultar todos los filtros por defecto
-            dtpDesde.Visible         = false;
-            dtpHasta.Visible         = false;
-            txtCodigoEspacio.Visible = false;
+            lblDesde.Visible = false;
+            dtpDesde.Visible = false;
+            lblHasta.Visible = false;
+            dtpHasta.Visible = false;
+            lblBusqueda.Visible = false;
+            txtBusqueda.Visible = false;
+            cmbEspacios.Visible = false;
 
             switch (_tipo)
             {
@@ -45,10 +61,12 @@ namespace GestionSalud.Presentacion
 
                 case TipoReporte.IncidenciasPorFechas:
                     lblTituloReporte.Text = "Reporte — Incidencias y Mantenimientos por Fechas";
+                    lblDesde.Visible = true;
                     dtpDesde.Visible = true;
+                    lblHasta.Visible = true;
                     dtpHasta.Visible = true;
-                    dtpDesde.Value   = DateTime.Now.AddMonths(-1);
-                    dtpHasta.Value   = DateTime.Now;
+                    dtpDesde.Value = DateTime.Now.AddMonths(-1);
+                    dtpHasta.Value = DateTime.Now;
                     break;
 
                 case TipoReporte.Top3Consultorios:
@@ -57,17 +75,45 @@ namespace GestionSalud.Presentacion
 
                 case TipoReporte.EquiposPorEspacio:
                     lblTituloReporte.Text = "Reporte — Equipos Detallados de un Espacio";
-                    txtCodigoEspacio.Visible = true;
+                    lblBusqueda.Text = "Seleccione Espacio:";
+                    lblBusqueda.Visible = true;
+                    cmbEspacios.Visible = true;
+                    CargarComboEspacios();
                     break;
 
                 case TipoReporte.BuscarEquipo:
                     lblTituloReporte.Text = "Reporte — Buscar Equipo por Código o Serie";
-                    txtCodigoEspacio.Visible = true;
+                    lblBusqueda.Text = "Código / N° Serie:";
+                    lblBusqueda.Visible = true;
+                    txtBusqueda.Visible = true;
+                    txtBusqueda.Clear();
+                    TextBoxHelper.SetPlaceholder(txtBusqueda, "Ej: MUN-001 o SN789123");
                     break;
             }
         }
 
-        // Generar el reporte
+        private void CargarComboEspacios()
+        {
+            try
+            {
+                cmbEspacios.DataSource = null;
+                System.Data.DataTable dt = _reportes.ObtenerEspaciosCombo();
+
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    cmbEspacios.ValueMember = "Id";
+                    cmbEspacios.DisplayMember = "Nombre";
+                    cmbEspacios.DataSource = dt;
+                    cmbEspacios.SelectedIndex = -1;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al cargar el catálogo de espacios: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
         private void btnGenerar_Click(object sender, EventArgs e)
         {
             try
@@ -79,6 +125,12 @@ namespace GestionSalud.Presentacion
                         break;
 
                     case TipoReporte.IncidenciasPorFechas:
+                        if (dtpDesde.Value.Date > dtpHasta.Value.Date)
+                        {
+                            MessageBox.Show("La fecha 'Desde' no puede ser mayor que 'Hasta'.",
+                                "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            return;
+                        }
                         dgvReporte.DataSource = _reportes.IncidenciasPorFechas(
                             dtpDesde.Value, dtpHasta.Value);
                         break;
@@ -88,31 +140,34 @@ namespace GestionSalud.Presentacion
                         break;
 
                     case TipoReporte.EquiposPorEspacio:
-                        if (!int.TryParse(txtCodigoEspacio.Text.Trim(), out int idEspacio))
+
+                        if (cmbEspacios.SelectedValue == null)
                         {
-                            MessageBox.Show("Ingrese un ID de espacio válido (número).",
+                            MessageBox.Show("Por favor seleccione un espacio de la lista.",
                                 "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                             return;
                         }
+
+                        int idEspacio = Convert.ToInt32(cmbEspacios.SelectedValue);
                         dgvReporte.DataSource = _reportes.EquiposPorEspacio(idEspacio);
                         break;
 
                     case TipoReporte.BuscarEquipo:
-                        if (string.IsNullOrWhiteSpace(txtCodigoEspacio.Text))
+                        if (string.IsNullOrWhiteSpace(txtBusqueda.Text))
                         {
-                            MessageBox.Show("Ingrese un código o número de serie para buscar.",
+                            MessageBox.Show("Ingrese un código municipal o número de serie para buscar.",
                                 "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                             return;
                         }
-                        dgvReporte.DataSource = _reportes.BuscarEquipo(txtCodigoEspacio.Text);
+                        dgvReporte.DataSource = _reportes.BuscarEquipo(txtBusqueda.Text.Trim());
                         break;
                 }
 
-                // Mostrar conteo de resultados
                 int filas = dgvReporte.Rows.Count;
                 MessageBox.Show(
-                    filas > 0 ? $"Se encontraron {filas} registro(s)."
-                              : "El reporte no devolvió resultados para los filtros aplicados.",
+                    filas > 0
+                        ? $"Se encontraron {filas} registro(s)."
+                        : "El reporte no devolvió resultados para los filtros aplicados.",
                     "Reporte generado",
                     MessageBoxButtons.OK,
                     filas > 0 ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
@@ -124,7 +179,6 @@ namespace GestionSalud.Presentacion
             }
         }
 
-        // Exportar a CSV
         private void btnExportar_Click(object sender, EventArgs e)
         {
             if (dgvReporte.Rows.Count == 0)
@@ -136,7 +190,7 @@ namespace GestionSalud.Presentacion
 
             using (var dialogo = new SaveFileDialog
             {
-                Filter   = "Archivo CSV (*.csv)|*.csv",
+                Filter = "Archivo CSV (*.csv)|*.csv",
                 FileName = $"Reporte_{_tipo}_{DateTime.Now:yyyyMMdd}"
             })
             {
@@ -144,16 +198,14 @@ namespace GestionSalud.Presentacion
 
                 try
                 {
-                    using (var writer = new System.IO.StreamWriter(dialogo.FileName,
-                        false, System.Text.Encoding.UTF8))
+                    using (var writer = new System.IO.StreamWriter(
+                        dialogo.FileName, false, System.Text.Encoding.UTF8))
                     {
-                        // Encabezados
                         var encabezados = new System.Collections.Generic.List<string>();
                         foreach (DataGridViewColumn col in dgvReporte.Columns)
                             encabezados.Add($"\"{col.HeaderText}\"");
                         writer.WriteLine(string.Join(",", encabezados));
 
-                        // Filas
                         foreach (DataGridViewRow fila in dgvReporte.Rows)
                         {
                             var celdas = new System.Collections.Generic.List<string>();
@@ -162,7 +214,6 @@ namespace GestionSalud.Presentacion
                             writer.WriteLine(string.Join(",", celdas));
                         }
                     }
-
                     MessageBox.Show("Archivo exportado exitosamente.", "Éxito",
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }

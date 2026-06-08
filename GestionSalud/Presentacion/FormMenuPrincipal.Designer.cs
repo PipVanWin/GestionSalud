@@ -53,8 +53,9 @@ namespace GestionSalud.Presentacion
             this.mnuSistema});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Padding = new System.Windows.Forms.Padding(7, 2, 0, 2);
-            this.menuStrip1.Size = new System.Drawing.Size(891, 28);
+            this.menuStrip1.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
+            this.menuStrip1.Padding = new System.Windows.Forms.Padding(7, 4, 0, 4);
+            this.menuStrip1.Size = new System.Drawing.Size(891, 36);
             this.menuStrip1.TabIndex = 2;
             // 
             // mnuMantenimiento
@@ -63,6 +64,7 @@ namespace GestionSalud.Presentacion
             this.mnuEquipos,
             this.usuarioNuevoToolStripMenuItem});
             this.mnuMantenimiento.ForeColor = System.Drawing.Color.White;
+            this.mnuMantenimiento.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
             this.mnuMantenimiento.Name = "mnuMantenimiento";
             this.mnuMantenimiento.Size = new System.Drawing.Size(124, 24);
             this.mnuMantenimiento.Text = "Mantenimiento";
@@ -79,6 +81,7 @@ namespace GestionSalud.Presentacion
             this.mnuAsignacion.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.mnuAsignarEnseres});
             this.mnuAsignacion.ForeColor = System.Drawing.Color.White;
+            this.mnuAsignacion.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
             this.mnuAsignacion.Name = "mnuAsignacion";
             this.mnuAsignacion.Size = new System.Drawing.Size(96, 24);
             this.mnuAsignacion.Text = "Asignación";
@@ -95,6 +98,7 @@ namespace GestionSalud.Presentacion
             this.mnuIncidencias.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.mnuRegistrarIncidencia});
             this.mnuIncidencias.ForeColor = System.Drawing.Color.White;
+            this.mnuIncidencias.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
             this.mnuIncidencias.Name = "mnuIncidencias";
             this.mnuIncidencias.Size = new System.Drawing.Size(96, 24);
             this.mnuIncidencias.Text = "Incidencias";
@@ -115,6 +119,7 @@ namespace GestionSalud.Presentacion
             this.mnuRptEspacio,
             this.mnuRptBuscar});
             this.mnuReportes.ForeColor = System.Drawing.Color.White;
+            this.mnuReportes.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
             this.mnuReportes.Name = "mnuReportes";
             this.mnuReportes.Size = new System.Drawing.Size(82, 24);
             this.mnuReportes.Text = "Reportes";
@@ -159,6 +164,7 @@ namespace GestionSalud.Presentacion
             this.mnuSistema.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.mnuCerrarSesion});
             this.mnuSistema.ForeColor = System.Drawing.Color.White;
+            this.mnuSistema.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
             this.mnuSistema.Name = "mnuSistema";
             this.mnuSistema.Size = new System.Drawing.Size(75, 24);
             this.mnuSistema.Text = "Sistema";
@@ -228,6 +234,7 @@ namespace GestionSalud.Presentacion
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "FormMenuPrincipal";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.Text = "Gestión de Salud Municipal";
             this.Load += new System.EventHandler(this.FormMenuPrincipal_Load);
             this.menuStrip1.ResumeLayout(false);

@@ -28,7 +28,7 @@ namespace GestionSalud.Presentacion
             this.lblTitulo.Font      = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
             this.lblTitulo.ForeColor = System.Drawing.Color.FromArgb(0, 80, 140);
             this.lblTitulo.Location  = new System.Drawing.Point(12, 12);
-            this.lblTitulo.Size      = new System.Drawing.Size(760, 60);
+            this.lblTitulo.Size = new System.Drawing.Size(960, 80);
             this.lblTitulo.Text      = "HOJA DE INVENTARIO";
             this.lblTitulo.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 
@@ -36,27 +36,28 @@ namespace GestionSalud.Presentacion
             this.lblFecha.AutoSize  = true;
             this.lblFecha.Font      = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Italic);
             this.lblFecha.ForeColor = System.Drawing.Color.Gray;
-            this.lblFecha.Location  = new System.Drawing.Point(12, 78);
+            this.lblFecha.Location  = new System.Drawing.Point(12, 98);
             this.lblFecha.Text      = "Fecha de generación: ...";
 
             // dgvHoja
             this.dgvHoja.AllowUserToAddRows    = false;
             this.dgvHoja.AllowUserToDeleteRows = false;
             this.dgvHoja.ReadOnly              = true;
-            this.dgvHoja.AutoSizeColumnsMode   = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.dgvHoja.Location              = new System.Drawing.Point(12, 100);
-            this.dgvHoja.Size                  = new System.Drawing.Size(760, 310);
+            this.dgvHoja.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCells;
+            this.dgvHoja.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.dgvHoja.Location = new System.Drawing.Point(12, 120);
+            this.dgvHoja.Size = new System.Drawing.Size(960, 300);
             this.dgvHoja.BackgroundColor        = System.Drawing.Color.White;
 
             // lblFirma
             this.lblFirma.AutoSize  = true;
             this.lblFirma.Font      = new System.Drawing.Font("Segoe UI", 9F);
-            this.lblFirma.Location  = new System.Drawing.Point(12, 422);
+            this.lblFirma.Location  = new System.Drawing.Point(12, 432);
             this.lblFirma.Text      = "Firma del Responsable del Centro: _______________________________";
 
             // btnImprimir
             this.btnImprimir.Text      = "Imprimir";
-            this.btnImprimir.Location  = new System.Drawing.Point(600, 418);
+            this.btnImprimir.Location  = new System.Drawing.Point(790, 428);
             this.btnImprimir.Size      = new System.Drawing.Size(90, 30);
             this.btnImprimir.BackColor = System.Drawing.Color.FromArgb(0, 120, 180);
             this.btnImprimir.ForeColor = System.Drawing.Color.White;
@@ -66,7 +67,7 @@ namespace GestionSalud.Presentacion
 
             // btnCerrar
             this.btnCerrar.Text      = "Cerrar";
-            this.btnCerrar.Location  = new System.Drawing.Point(698, 418);
+            this.btnCerrar.Location  = new System.Drawing.Point(888, 428);
             this.btnCerrar.Size      = new System.Drawing.Size(74, 30);
             this.btnCerrar.BackColor = System.Drawing.Color.Gray;
             this.btnCerrar.ForeColor = System.Drawing.Color.White;
@@ -77,7 +78,7 @@ namespace GestionSalud.Presentacion
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode       = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor           = System.Drawing.Color.White;
-            this.ClientSize          = new System.Drawing.Size(786, 460);
+            this.ClientSize          = new System.Drawing.Size(984, 470);
             this.Controls.Add(this.lblTitulo);
             this.Controls.Add(this.lblFecha);
             this.Controls.Add(this.dgvHoja);
