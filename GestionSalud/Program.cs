@@ -6,7 +6,7 @@ namespace GestionSalud
 {
     static class Program
     {
-        /// Flujo: Login → (si OK) → FormMenuPrincipal con el empleado autenticado.
+        /// Flujo: Login > OK > FormMenuPrincipal con el empleado autenticado.
         [STAThread]
         static void Main()
         {
